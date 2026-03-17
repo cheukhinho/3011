@@ -71,3 +71,26 @@ class ReviewRead(ReviewBase):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class GenreDistributionItem(BaseModel):
+    genre_id: int
+    genre_name: str
+    movie_count: int
+
+
+class TopActorItem(BaseModel):
+    actor_id: int
+    actor_name: str
+    movie_count: int
+
+
+class MoviesByYearItem(BaseModel):
+    release_year: int
+    movie_count: int
+
+
+class AverageRatingSummary(BaseModel):
+    average_rating: float | None
+    total_movies: int
+    min_votes: int

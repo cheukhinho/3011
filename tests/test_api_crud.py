@@ -81,6 +81,14 @@ def test_movies_crud_and_limits(client: TestClient) -> None:
     assert missing_response.status_code == 404
 
 
+def test_duplicate_movie_tmdb_id_returns_conflict(client: TestClient) -> None:
+    first = _create_movie(client, "Unique TMDB Movie", tmdb_id=7777)
+    assert first.status_code == 201
+
+    duplicate = _create_movie(client, "Duplicate TMDB Movie", tmdb_id=7777)
+    assert duplicate.status_code == 409
+
+
 def test_actor_edges_and_limits(client: TestClient) -> None:
     actor_a = client.post("/actors", json={"name": "Actor A", "tmdb_id": 2001, "birth_year": 1980})
     actor_b = client.post("/actors", json={"name": "Actor B", "tmdb_id": 2002, "birth_year": 1982})
