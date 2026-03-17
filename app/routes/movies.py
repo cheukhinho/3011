@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,9 @@ from app.schemas import MovieCreate, MovieRead, MovieUpdate
 
 
 router = APIRouter(prefix="/movies", tags=["movies"])
+
+DEFAULT_LIMIT = 100
+MAX_LIMIT = 200
 
 
 @router.post("", response_model=MovieRead, status_code=status.HTTP_201_CREATED)
@@ -26,7 +29,11 @@ def create_movie(payload: MovieCreate, db: Session = Depends(get_db)) -> Movie:
 
 
 @router.get("", response_model=list[MovieRead])
-def get_movies(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)) -> list[Movie]:
+def get_movies(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    db: Session = Depends(get_db),
+) -> list[Movie]:
     return db.query(Movie).order_by(Movie.id).offset(skip).limit(limit).all()
 
 

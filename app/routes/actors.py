@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,9 @@ from app.schemas import ActorCreate, ActorRead, ActorUpdate
 
 
 router = APIRouter(prefix="/actors", tags=["actors"])
+
+DEFAULT_LIMIT = 100
+MAX_LIMIT = 200
 
 
 @router.post("", response_model=ActorRead, status_code=status.HTTP_201_CREATED)
@@ -26,7 +29,11 @@ def create_actor(payload: ActorCreate, db: Session = Depends(get_db)) -> Actor:
 
 
 @router.get("", response_model=list[ActorRead])
-def get_actors(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)) -> list[Actor]:
+def get_actors(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    db: Session = Depends(get_db),
+) -> list[Actor]:
     return db.query(Actor).order_by(Actor.id).offset(skip).limit(limit).all()
 
 

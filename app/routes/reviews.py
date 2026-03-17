@@ -8,6 +8,9 @@ from app.schemas import ReviewCreate, ReviewRead
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
+DEFAULT_LIMIT = 100
+MAX_LIMIT = 200
+
 
 @router.post("", response_model=ReviewRead, status_code=status.HTTP_201_CREATED)
 def create_review(payload: ReviewCreate, db: Session = Depends(get_db)) -> Review:
@@ -23,11 +26,16 @@ def create_review(payload: ReviewCreate, db: Session = Depends(get_db)) -> Revie
 
 
 @router.get("", response_model=list[ReviewRead])
-def get_reviews(movie_id: int | None = Query(default=None, ge=1), db: Session = Depends(get_db)) -> list[Review]:
+def get_reviews(
+    movie_id: int | None = Query(default=None, ge=1),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
+    db: Session = Depends(get_db),
+) -> list[Review]:
     query = db.query(Review).order_by(Review.id)
     if movie_id is not None:
         query = query.filter(Review.movie_id == movie_id)
-    return query.all()
+    return query.offset(skip).limit(limit).all()
 
 
 @router.delete("/{review_id}", status_code=status.HTTP_204_NO_CONTENT)
